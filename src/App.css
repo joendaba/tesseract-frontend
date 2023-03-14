@@ -39,6 +39,10 @@ h1 {
   opacity: 0.4;
 }
 
+.todo-row.complete>div>div.icons>svg:nth-child(1) {
+  opacity: 1;
+}
+
 .todo-form {
   width: 100%;
   margin-bottom: 32px;

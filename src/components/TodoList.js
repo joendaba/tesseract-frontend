@@ -2,23 +2,30 @@ import React, { useState } from "react";
 import TodoForm from "./TodoForm";
 import Todo from "./Todo";
 import { useEffect } from "react";
+import { getTodosList } from "./API.js";
+import axios from "axios";
 
 function TodoList() {
   const [todos, setTodos] = useState([]);
 
-  useEffect(() => {
-    console.log(todos);
-  }, [todos]);
+  const updateTodos = async () => {
+    const todos = await getTodosList();
+    setTodos(todos);
+  }
 
-  const addTodo = (todo) => {
-    if (!todo.text || /^\s*$/.test(todo.text)) {
+  useEffect(() => {
+    getTodosList().then((todos)=>{
+      console.log(todos);
+      setTodos(todos);
+    });
+  }, []);
+
+  const addTodo = async (todo) => {
+    if (!todo.title || /^\s*$/.test(todo.title)) {
       return;
     }
-
-    const newTodos = [todo, ...todos];
-
-    setTodos(newTodos);
-    console.log(...todos);
+    const newToDo = await axios.post('http://localhost:3000/v1/to-do', todo);
+    updateTodos();
   };
 
   const showDescription = (todoId) => {
@@ -31,35 +38,47 @@ function TodoList() {
     setTodos(updatedTodos);
   };
 
-  const updateTodo = (todoId, newValue) => {
-    if (!newValue.text || /^\s*$/.test(newValue.text)) {
+  const updateTodo = async (todoId, newValue) => {
+    if (!newValue.title || /^\s*$/.test(newValue.title)) {
+
       return;
     }
 
-    setTodos((prev) =>
-      prev.map((item) => (item.id === todoId ? newValue : item))
+    const updatedTodo = await axios.patch(
+      `http://localhost:3000/v1/to-do/${todoId}`, 
+      newValue
     );
+    updateTodos();
   };
 
-  const removeTodo = (id) => {
-    const removedArr = [...todos].filter((todo) => todo.id !== id);
+  const removeTodo = async (id) => {
+    const removeTodo = await axios.delete(
+      `http://localhost:3000/v1/to-do/${id}`
+    );
 
-    setTodos(removedArr);
+    updateTodos();
   };
 
-  const completeTodo = (id) => {
-    let updatedTodos = todos.map((todo) => {
-      if (todo.id === id) {
-        todo.isComplete = !todo.isComplete;
+  const completeTodo = async (id) => {
+    
+    const [todoFound] = todos.filter((todo) => todo.id === id);
+    console.log(todoFound);
+    await axios.patch(
+      `http://localhost:3000/v1/to-do/${id}`, 
+      {
+        isDone: todoFound.is_done === 0 ? 1 : 0
+        
       }
-      return todo;
-    });
-    setTodos(updatedTodos);
+    );
+
+    updateTodos();
   };
+
+
 
   return (
     <>
-      <h1>What's the Plan for Today?</h1>
+      <h1>Josemiguel's To-Do List</h1>
       <TodoForm onSubmit={addTodo} />
       <Todo
         todos={todos}

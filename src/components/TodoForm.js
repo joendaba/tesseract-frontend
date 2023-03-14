@@ -24,14 +24,14 @@ function TodoForm(props) {
     setShowDescription(!showDescription);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     props.onSubmit({
       id: Math.floor(Math.random() * 10000),
-      text: input,
+      title: input,
       description,
-      isDone: false,
+      is_done: false,
       showDescription: false,
     });
     setInput("");
